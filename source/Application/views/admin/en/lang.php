@@ -1528,6 +1528,7 @@ $aLang = [
     'tbclnewsletter_plain'     => 'TEXT',
     'tbclnewsletter_preview'   => 'Preview',
     'tbclnewsletter_selection' => 'Selection',
+    'tbclnewsletter_recipients' => 'Export recipients',
     'tbcl_main'                => 'Main',
     'tbcladminlinks_mall'      => 'Mall',
     'tbcldelivery_mall'        => 'Mall',

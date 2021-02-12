@@ -148,10 +148,7 @@
         </MAINMENU>
         <MAINMENU id="mxcustnews">
             <SUBMENU id="mxnewsletter" cl="admin_newsletter" list="newsletter_list">
-                <TAB id="tbclnewsletter_main" cl="newsletter_main" />
-                <TAB id="tbclnewsletter_plain" cl="newsletter_plain" />
-                <TAB id="tbclnewsletter_preview" cl="newsletter_preview" />
-                <TAB id="tbclnewsletter_selection" cl="newsletter_selection" />
+                <TAB id="tbclnewsletter_recipients" cl="newsletter_main" />
                 <BTN id="newsletter_new" />
             </SUBMENU>
             <SUBMENU id="mxurls" cl="admin_links" list="adminlinks_list">

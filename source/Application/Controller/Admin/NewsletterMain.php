@@ -7,7 +7,8 @@
 
 namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
-use oxRegistry;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\ConnectionProvider;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactory;
 
 /**
  * Admin article main newsletter manager.
@@ -47,28 +48,61 @@ class NewsletterMain extends \OxidEsales\Eshop\Application\Controller\Admin\Admi
     }
 
     /**
-     * Saves newsletter HTML format text.
+     * Export recipients to CSV
      */
-    public function save()
+    public function save(): void
     {
-        $soxId = $this->getEditObjectId();
-        $aParams = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter("editval");
+        $connectionProvider = new ConnectionProvider();
+        $queryBuilderFactory = new QueryBuilderFactory($connectionProvider);
+        $queryBuilder = $queryBuilderFactory->create();
 
-        // shopid
-        $sShopID = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable("actshop");
-        $aParams['oxnewsletter__oxshopid'] = $sShopID;
+        $queryBuilder
+            ->select('*')
+            ->from('oxuser')
+            ->orderBy('oxuser.oxcreate', 'DESC');
 
-        $oNewsletter = oxNew(\OxidEsales\Eshop\Application\Model\Newsletter::class);
-        if ($soxId != "-1") {
-            $oNewsletter->load($soxId);
-        } else {
-            $aParams['oxnewsletter__oxid'] = null;
+        $users = $queryBuilder->execute()->fetchAllAssociative();
+        $this->downloadCSV("data_export_" . date("Y-m-d") . ".csv");
+        echo $this->array2CSV($users);
+        die();
+    }
+
+    public function downloadCSV($filename): void
+    {
+        // disable caching
+        $now = gmdate("D, d M Y H:i:s");
+        header("Expires: Tue, 03 Jul 2001 06:00:00 GMT");
+        header("Cache-Control: max-age=0, no-cache, must-revalidate, proxy-revalidate");
+        header("Last-Modified: {$now} GMT");
+
+        // force download
+        header("Content-Type: application/force-download");
+        header("Content-Type: application/octet-stream");
+        header("Content-Type: application/download");
+
+        // disposition / encoding on response body
+        header("Content-Disposition: attachment;filename={$filename}");
+        header("Content-Transfer-Encoding: binary");
+    }
+
+    /**
+     * @param array $array
+     *
+     * @return string|false
+     */
+    public function array2CSV(array &$array)
+    {
+        if (count($array) === 0) {
+            return null;
         }
+        ob_start();
+        $df = fopen("php://output", 'w');
+        fputcsv($df, array_keys(reset($array)));
+        foreach ($array as $row) {
+            fputcsv($df, $row);
+        }
+        fclose($df);
 
-        $oNewsletter->assign($aParams);
-        $oNewsletter->save();
-
-        // set oxid if inserted
-        $this->setEditObjectId($oNewsletter->getId());
+        return ob_get_clean();
     }
 }
